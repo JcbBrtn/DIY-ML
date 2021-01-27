@@ -9,18 +9,10 @@ class Neuron:
         self.last_input = np.array([0,0,0])
         self.last_a = 0.0
         self.learning_rate=learning_rate
+
+    def attach(self, amount=1):
+        np.append(self.weights, np.random.random(amount))
     
-    def fire(self, inp):
-        self.last_input = inp
-        self.last_z = sum(self.weights * self.last_input) + self.bias
-        #Put last Output through activation function 
-        self.last_a = self.f(self.last_z)
-        return self.last_z
-
-    def learn(self, error):
-        for i, activation in enumerate(self.last_input):
-            self.weights[i] += self.learning_rate * error * self.last_input[i] * self.f_prime(self.last_z)
-
     def f_prime(self, z):
         if self.activation == 'sig':
             a = self.f(z) * (1 - self.f(z))
@@ -46,4 +38,18 @@ class Neuron:
         else:
             a = z
         return a
-            
+
+    def fire(self, inp):
+        """
+        Make sure inp is a numpy array the same size (size, ) as the one given
+        """
+        self.last_input = inp
+        self.last_z = sum(self.weights * self.last_input) + self.bias
+        #Put last Output through activation function 
+        self.last_a = self.f(self.last_z)
+        return self.last_z
+
+    def learn(self, error):
+        for i, activation in enumerate(self.last_input):
+            self.weights[i] += self.learning_rate * error * self.last_input[i] * self.f_prime(self.last_z)
+        self.bias += self.learning_rate * error
