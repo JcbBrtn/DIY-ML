@@ -43,7 +43,7 @@ def test():
     model = Linear(len(X[0]))
     model.fit(X, y, epochs=50)
 
-    print(model.run(np.array([[4,7,1]])))
+    print(model.predict(np.array([[4,7,1]])))
 
 if __name__ == '__main__':
     test()

@@ -9,6 +9,10 @@ class Neuron:
         self.last_input = np.array([0,0,0])
         self.last_a = 0.0
         self.learning_rate=learning_rate
+        self.last_error = 0.0
+    
+    def toString(self):
+        return f'Neuron With : \nWeights : {self.weights}\nAct : {self.activation}\nLast Input : {self.last_input}'
 
     def attach(self, amount=1):
         np.append(self.weights, np.random.random(amount))
@@ -44,12 +48,17 @@ class Neuron:
         Make sure inp is a numpy array the same size (size, ) as the one given
         """
         self.last_input = inp
-        self.last_z = sum(self.weights * self.last_input) + self.bias
+        self.last_z = sum(self.weights * inp) + self.bias
         #Put last Output through activation function 
         self.last_a = self.f(self.last_z)
-        return self.last_z
+
+        return self.last_a
+
+    def last_error(self):
+        return self.last_error
 
     def learn(self, error):
         for i, activation in enumerate(self.last_input):
-            self.weights[i] += self.learning_rate * error * self.last_input[i] * self.f_prime(self.last_z)
+            self.last_error = error * self.last_input[i] * self.f_prime(self.last_z)
+            self.weights[i] += self.learning_rate * self.last_error
         self.bias += self.learning_rate * error
