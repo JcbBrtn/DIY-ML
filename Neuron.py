@@ -48,17 +48,20 @@ class Neuron:
         Make sure inp is a numpy array the same size (size, ) as the one given
         """
         self.last_input = inp
-        self.last_z = sum(self.weights * inp) + self.bias
+        #print(f'last_input : {self.last_input}')
+        #print(f'Sum({self.weights} * {self.last_input}) + {self.bias}')
+        self.last_z = sum(self.weights * self.last_input) + self.bias
         #Put last Output through activation function 
         self.last_a = self.f(self.last_z)
 
         return self.last_a
 
-    def last_error(self):
+    def get_error(self):
         return self.last_error
 
     def learn(self, error):
+        self.last_error = 0.0
         for i, activation in enumerate(self.last_input):
-            self.last_error = error * self.last_input[i] * self.f_prime(self.last_z)
-            self.weights[i] += self.learning_rate * self.last_error
-        self.bias += self.learning_rate * error
+            self.last_error += error * activation * self.f_prime(self.last_z) * self.learning_rate
+            self.weights[i] -=  self.last_error
+        self.bias -= self.learning_rate * error

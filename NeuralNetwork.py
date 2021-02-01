@@ -2,14 +2,15 @@ import numpy as np
 from Neuron import Neuron
 
 class NeuralNetwork:
-    def __init__(self, input_size, learning_rate=0.01):
+    def __init__(self, input_size, learning_rate=0.05):
         """
         input_size is a single int to tell the size of the input space given
         """
         self.input_size = input_size
-        self.network = [[]]
+        self.network = []
         self.learning_rate = learning_rate
         self.last_size = input_size
+        self.total_loss = 0.0
 
     def Dense(self, units=1, learning_rate=0.01, activation='linear'):
         """
@@ -21,37 +22,40 @@ class NeuralNetwork:
         self.network.append(new_layer)
         self.last_size = len(new_layer)
 
-    def fit(self, X, Y, epochs=1):
-        for epoch in range(epochs):
-            for i, x in enumerate(X):
-                pred = self.fire(x)
-                total_error = 0
-                for i,y in enumerate(Y):
-                    total_error += (pred[i] - y)**2
-                self.back_prop(total_error)
-
     def back_prop(self, error):
         for layer in range(1, 1 + len(self.network)):
             i = -1 * layer
-            next_error = 0.0
+            next_error = []
             for n in range(len(self.network[i])):
-                self.network[i][n].learn(error)
-                next_error += self.network[i][n].last_error()
+                self.network[i][n].learn(error[n])
+                next_error.append(self.network[i][n].get_error())
             error = next_error
 
-    def fire(self, x):
+    def forward_prop(self, inp):
         """
         Ad-hoc fire, given input x and current weights, get outputs.
         """
         for layer in self.network:
-            x = x
-            next_x = []
-            for n in layer:
-                x = x
-                print(x)
-                next_x.append(n.fire(x))
-            x = next_x
-        return x
+            next_act = []
+            for neu in layer:
+                act = neu.fire(inp)
+                next_act.append(act)
+            inp = next_act
+        return inp
+
+    def fit(self, X, Y, epochs=1):
+        for epoch in range(epochs):
+            print(f'Epoch {epoch} / {epochs}', end=' ')
+            for i, x in enumerate(X):
+                pred = self.forward_prop(x)
+                #print(f'predictions = {pred}')
+                total_error = 0
+                error = []
+                for j,y in enumerate(Y[i]):
+                    error.append((pred[j] - y))
+                self.total_loss = sum(error)
+                self.back_prop(error)
+            print(f'Total Loss : {self.total_loss}')
 
 def main():
     model = NeuralNetwork(4)
@@ -98,9 +102,9 @@ def main():
         [0,0,0,0]
     ])
 
-    model.fit(X, Y, epochs=100)
+    model.fit(X, Y, epochs=300)
 
     for x in X:
-        print(f'Input : {x}\nOutput : {model.fire(x)}')
+        print(f'Input : {x} -> Output : {model.forward_prop(x)}')
 if __name__ == '__main__':
     main()
