@@ -2,67 +2,92 @@ import numpy as np
 from Neuron import Neuron
 
 class NeuralNetwork:
-    def __init__(self, input_size, learning_rate=0.05):
+    def __init__(self, input_size):
         """
         input_size is a single int to tell the size of the input space given
         """
         self.input_size = input_size
-        self.network = []
-        self.learning_rate = learning_rate
-        self.last_size = input_size
-        self.total_loss = 0.0
+        self.network = [[]]
+        for i in range(input_size):
+            self.network[0].append(Neuron(True))
 
-    def Dense(self, units=1, learning_rate=0.01, activation='linear'):
+    def toString(self):
+        output = f''
+        for layer in range(len(self.network)):
+            output += f'#####################\nLayer {layer}\n####################\n'
+            for n in self.network[layer]:
+                output += n.toString()
+                output+='\n'
+        return output
+
+    def Dense(self, units, learning_rate=0.25, activation='relu'):
         """
-        Add a dense Layer of Neurons of size units to the end of the neural network
+        Adds a Dense layer of units neurons to the end of the neural network.
         """
         new_layer = []
         for i in range(units):
-            new_layer.append(Neuron(input_size=(self.last_size,),learning_rate=learning_rate, activation=activation))
+            new_layer.append(Neuron(False, input_arr=self.network[-1], learning_rate=learning_rate,activation_type=activation))
         self.network.append(new_layer)
-        self.last_size = len(new_layer)
 
-    def back_prop(self, error):
-        for layer in range(1, 1 + len(self.network)):
-            i = -1 * layer
-            next_error = []
-            for n in range(len(self.network[i])):
-                self.network[i][n].learn(error[n])
-                next_error.append(self.network[i][n].get_error())
-            error = next_error
+    def new_prop(self):
+        for l in self.network:
+            for i in range(len(l)):
+                l[i].fired = False
 
-    def forward_prop(self, inp):
-        """
-        Ad-hoc fire, given input x and current weights, get outputs.
-        """
-        for layer in self.network:
-            next_act = []
-            for neu in layer:
-                act = neu.fire(inp)
-                next_act.append(act)
-            inp = next_act
-        return inp
+    def feed_forward(self, x):
+        #Ad-hoc forward propagation given input array x
+        self.new_prop()
+        #Set the input layer activations
+        for j, feat in enumerate(x):
+            #print(f'Setting Activation to {feat}')
+            self.network[0][j].set_activation(feat)
+        
+        #Fire by calling each end neuron
+        pred = []
+        for out in self.network[-1]:
+            #print(f'Len {len(self.network)} | Neuron {out.toString()}')
+            pred.append(out.activate())
 
-    def fit(self, X, Y, epochs=1):
+        return pred
+
+    def reset_error(self):
+        for l in self.network:
+            for n in l:
+                n.reset_error()
+
+    def update_lr(self, new_lr):
+        for l in self.network:
+            for n in l:
+                n.learning_rate = new_lr
+
+    def fit(self, X, Y, epochs=1, batch_size=16):
         for epoch in range(epochs):
-            print(f'Epoch {epoch} / {epochs}', end=' ')
-            for i, x in enumerate(X):
-                pred = self.forward_prop(x)
-                #print(f'predictions = {pred}')
-                total_error = 0
-                error = []
-                for j,y in enumerate(Y[i]):
-                    error.append((pred[j] - y))
-                self.total_loss = sum(error)
-                self.back_prop(error)
-            print(f'Total Loss : {self.total_loss}')
+            total_cost = 0.0
+            for i in range(batch_size):
+                #print(self.toString())
+                x = X[i]
+                pred = self.feed_forward(x)
+                #Update each end neurons error with each prediction made
+                self.reset_error()
+                for j,p in enumerate(pred):
+                    total_cost += (p - Y[i][j])**2
+                    self.network[-1][j].update_error((p - Y[i][j]))
+
+                #Call backprop going backwards through the Network
+                for layer in range(1, len(self.network)):
+                    for n in self.network[-1 * layer]:
+                        n.backprop()
+
+            self.update_lr((total_cost / len(X)) + (1 - (epoch/epochs)))
+
+            print(f'Epoch {epoch} / {epochs} | Avg Network Cost : {total_cost / len(X)}')
 
 def main():
     model = NeuralNetwork(4)
-    model.Dense(4, activation='sig')
-    model.Dense(4, activation='sig')
-    model.Dense(4, activation='sig')
-    model.Dense(4, activation='sig')
+    model.Dense(4, activation='sig', learning_rate=2)
+    model.Dense(8, activation='sig', learning_rate=2)
+    model.Dense(8, activation='sig', learning_rate=2)
+    model.Dense(4, activation='sig', learning_rate=2)
 
     X = np.array([
         [0,0,0,0],
@@ -102,9 +127,13 @@ def main():
         [0,0,0,0]
     ])
 
-    model.fit(X, Y, epochs=300)
+    model.fit(X, Y, epochs=1000)
 
-    for x in X:
-        print(f'Input : {x} -> Output : {model.forward_prop(x)}')
+    print(model.toString())
+
+    for y,x in zip(Y,X):
+        print(f'Expected Output : {y}\nOutput : {model.feed_forward(x)}')
+
+
 if __name__ == '__main__':
     main()
