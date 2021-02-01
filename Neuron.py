@@ -40,6 +40,12 @@ class Neuron:
         else:
             return f'Neuron of Type : Input\nCurrent Activation : {self.curr_activation}'
 
+    def reset_fired(self):
+        self.fired = False
+
+    def reset_error(self):
+        self.total_error = 0.0
+
     def update_error(self, error):
         self.total_error += error
 
@@ -110,8 +116,31 @@ class Neuron:
         #Update the Weights
         for i in range(len(self.weights)):
             weight_error = self.last_input[i] * self.activation_der(self.curr_z) * error
-            self.weights[i] -= self.learning_rate * weight_error
+
+            self.weights[i] -= self.learning_rate * self.last_input[i] * self.activation_der(self.curr_z) * error
             self.back_connections[i].update_error(weight_error)
 
         #Update the Bias
         self.bias -= self.learning_rate * self.activation_der(self.curr_z) * error
+
+def main():
+    model = []
+    model.append(Neuron(True))
+    model.append(Neuron(False, [model[0]], learning_rate=0.5))
+    model.append(Neuron(False, [model[1]], learning_rate=0.5))
+
+    for i in range(10000):
+        for n in model:
+            n.reset_error()
+            n.reset_fired()
+
+        model[0].set_activation(np.array([1]))
+        pred = model[-1].activate()
+        print(f'Model\'s prediction : {pred}')
+        model[-1].update_error(pred)
+        for j in range(1, len(model)):
+            model[-1 * j].backprop()
+
+if __name__ == '__main__':
+    main()
+
