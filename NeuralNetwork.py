@@ -78,16 +78,18 @@ class NeuralNetwork:
                     for n in self.network[-1 * layer]:
                         n.backprop()
 
-            self.update_lr((total_cost / len(X)) + (1 - (epoch/epochs)))
+            #self.update_lr((total_cost / len(X)) + (1 - (epoch/epochs)))
 
             print(f'Epoch {epoch} / {epochs} | Avg Network Cost : {total_cost / len(X)}')
 
 def main():
     model = NeuralNetwork(4)
-    model.Dense(4, activation='sig', learning_rate=2)
-    model.Dense(8, activation='sig', learning_rate=2)
-    model.Dense(8, activation='sig', learning_rate=2)
-    model.Dense(4, activation='sig', learning_rate=2)
+    model.Dense(4, activation='sig', learning_rate=0.5)
+    model.Dense(3, activation='sig', learning_rate=0.5)
+    model.Dense(3, activation='sig', learning_rate=0.5)
+    model.Dense(3, activation='sig', learning_rate=0.5)
+    model.Dense(3, activation='sig', learning_rate=0.5)
+    model.Dense(4, activation='sig', learning_rate=0.5)
 
     X = np.array([
         [0,0,0,0],
@@ -127,7 +129,7 @@ def main():
         [0,0,0,0]
     ])
 
-    model.fit(X, Y, epochs=1000)
+    model.fit(X, Y, epochs=50000)
 
     print(model.toString())
 

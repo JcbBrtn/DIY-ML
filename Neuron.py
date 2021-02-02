@@ -121,7 +121,7 @@ class Neuron:
             self.back_connections[i].update_error(weight_error)
 
         #Update the Bias
-        self.bias -= self.learning_rate * self.activation_der(self.curr_z) * error
+        self.bias -= self.activation_der(self.curr_z) * error * self.learning_rate
 
 def main():
     model = []
