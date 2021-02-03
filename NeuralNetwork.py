@@ -60,7 +60,7 @@ class NeuralNetwork:
             for n in l:
                 n.learning_rate = new_lr
 
-    def fit(self, X, Y, epochs=1, batch_size=16):
+    def fit(self, X, Y, epochs=1, batch_size=16, optimizer='sgd'):
         for epoch in range(epochs):
             total_cost = 0.0
             for i in range(batch_size):
@@ -73,23 +73,20 @@ class NeuralNetwork:
                     total_cost += (p - Y[i][j])**2
                     self.network[-1][j].update_error((p - Y[i][j]))
 
-                #Call backprop going backwards through the Network
-                for layer in range(1, len(self.network)):
-                    for n in self.network[-1 * layer]:
-                        n.backprop()
-
-            #self.update_lr((total_cost / len(X)) + (1 - (epoch/epochs)))
+                if optimizer=='sgd':
+                    #Call backprop going backwards through the Network
+                    for layer in range(1, len(self.network)):
+                        for n in self.network[-1 * layer]:
+                            n.backprop(optimizer)
+                elif optimizer=='smart':
+                    
 
             print(f'Epoch {epoch} / {epochs} | Avg Network Cost : {total_cost / len(X)}')
 
 def main():
     model = NeuralNetwork(4)
-    model.Dense(4, activation='sig', learning_rate=0.5)
-    model.Dense(3, activation='sig', learning_rate=0.5)
-    model.Dense(3, activation='sig', learning_rate=0.5)
-    model.Dense(3, activation='sig', learning_rate=0.5)
-    model.Dense(3, activation='sig', learning_rate=0.5)
-    model.Dense(4, activation='sig', learning_rate=0.5)
+    model.Dense(100, learning_rate=0.5, activation='sig')
+    model.Dense(4, activation='sig', learning_rate=0.1)
 
     X = np.array([
         [0,0,0,0],
@@ -129,7 +126,7 @@ def main():
         [0,0,0,0]
     ])
 
-    model.fit(X, Y, epochs=50000)
+    model.fit(X, Y, epochs=100)
 
     print(model.toString())
 

@@ -15,13 +15,19 @@ class Linear:
 
         return self.last_output
 
+    def learn(self, true_y, x):
+        """
+        Adjust weights based on last output, the true value of y, and our input
+        """
+        self.weights += self.learning_rate * (true_y - self.last_output) * x
+
     def fit(self, X, Y, epochs=1):
         for epoch in range(epochs):
             print(f'Epoch {epoch} / {epochs}')
             for t, x in enumerate(X):
                 print(f'\tt = {t} / {len(X)}', end='\r')
                 self.run(x)
-                self.weights += self.learning_rate * (Y[t] - self.last_output) * x
+                self.learn(Y[t], x)
             print(self.weights)
         
     def predict(self, X):
@@ -40,8 +46,8 @@ def test():
         
     y = np.array([3,5,6,3,5])
 
-    model = Linear(len(X[0]))
-    model.fit(X, y, epochs=50)
+    model = Linear(len(X[0]), learning_rate=0.02)
+    model.fit(X, y, epochs=5)
 
     print(model.predict(np.array([[4,7,1]])))
 

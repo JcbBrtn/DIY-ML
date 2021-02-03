@@ -1,4 +1,5 @@
 import numpy as np
+from Linear import Linear
 
 class Neuron:
     def __init__(self, is_input=False, input_arr=[], learning_rate=0.01, activation_type='sig'):
@@ -31,6 +32,7 @@ class Neuron:
             self.curr_z = 0.0
             self.last_input = []
             self.learning_rate=learning_rate
+            self.smart_agent=Linear(input_shape=len(self.back_connections))
         else:
             self.fired = True
            
@@ -55,6 +57,7 @@ class Neuron:
     def back_attach(self, n):
         self.back_connections.append(n)
         n.front_attach(self)
+        self.smart_agent=Linear(input_shape=len(self.back_connections))
 
     def activation_der(self, z):
         a = z
@@ -106,22 +109,28 @@ class Neuron:
 
             return self.curr_activation
 
-    def backprop(self):
+    def backprop(self, optimizer):
         n = 1
         if len(self.front_connections) > 0:
             n = len(self.front_connections)
         
         error = self.total_error / n
+        if optimizer=='sgd':
+            #Update the Weights
+            for i in range(len(self.weights)):
+                weight_error = self.last_input[i] * self.activation_der(self.curr_z) * error
 
-        #Update the Weights
-        for i in range(len(self.weights)):
-            weight_error = self.last_input[i] * self.activation_der(self.curr_z) * error
+                self.weights[i] -= self.learning_rate * self.last_input[i] * self.activation_der(self.curr_z) * error
+                self.back_connections[i].update_error(weight_error)
 
-            self.weights[i] -= self.learning_rate * self.last_input[i] * self.activation_der(self.curr_z) * error
-            self.back_connections[i].update_error(weight_error)
+            #Update the Bias
+            self.bias -= self.activation_der(self.curr_z) * error * self.learning_rate
+        elif optimizer=='smart':
+            #For Each Weight Create an x in input X that a linear learning agent tries to learn to adjust the weights
+            X = []
+            for weight in self.weights:
+                X.append(weight, error)
 
-        #Update the Bias
-        self.bias -= self.activation_der(self.curr_z) * error * self.learning_rate
 
 def main():
     model = []
