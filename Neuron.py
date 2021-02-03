@@ -127,6 +127,7 @@ class Neuron:
             self.bias -= self.activation_der(self.curr_z) * error * self.learning_rate
         elif optimizer=='smart':
             #For Each Weight Create an x in input X that a linear learning agent tries to learn to adjust the weights
+            #Use this Agent to Find the Optimal value to adjust by based on the Avg Change of cost of neuron, cost of neuron, and the various Chain rule derivatives
             X = []
             for weight in self.weights:
                 X.append(weight, error)
@@ -148,7 +149,7 @@ def main():
         print(f'Model\'s prediction : {pred}')
         model[-1].update_error(pred)
         for j in range(1, len(model)):
-            model[-1 * j].backprop()
+            model[-1 * j].backprop('smart')
 
 if __name__ == '__main__':
     main()
