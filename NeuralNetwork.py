@@ -89,12 +89,15 @@ class NeuralNetwork:
                     for n in self.network[-1 * layer]:
                         n.backprop(optimizer)
 
-            print(f'Epoch {epoch} / {epochs} | Avg Network Cost : {total_cost / len(X)}')
+            print(f'Epoch {epoch} / {epochs} | Avg Network Cost : {total_cost / len(X)}', end='\r')
 
 def main():
     model = NeuralNetwork(4)
-    model.Dense(4, learning_rate=0.03, activation='relu')
-    model.connect(0, -1)
+    model.Dense(4, learning_rate=0.09, activation='relu')
+    model.Dense(4, learning_rate=0.09, activation='relu')
+    for layer1 in range(len(model.network)):
+        for layer2 in range(1, len(model.network)):
+            model.connect(layer1, layer2)
 
     X = np.array([
         [0,0,0,0],[0,0,0,1],[0,0,1,0],[0,0,1,1],
