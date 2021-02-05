@@ -29,6 +29,16 @@ class NeuralNetwork:
             new_layer.append(Neuron(False, input_arr=self.network[-1], learning_rate=learning_rate,activation_type=activation))
         self.network.append(new_layer)
 
+    def connect(self, l1, l2):
+        """
+        This function connects 2 layers such that l1 is outputing to l2.
+        l1 and l2 are both the integer describing which number layer in self.network
+        being described.
+        """
+        for inp_i in range(len(self.network[l1])):
+            for i in range(len(self.network[l2])):
+                self.network[l2][i].front_attach(self.network[l1][inp_i])
+
     def new_prop(self):
         for l in self.network:
             for i in range(len(l)):
@@ -69,64 +79,38 @@ class NeuralNetwork:
                 pred = self.feed_forward(x)
                 #Update each end neurons error with each prediction made
                 self.reset_error()
+
                 for j,p in enumerate(pred):
                     total_cost += (p - Y[i][j])**2
                     self.network[-1][j].update_error((p - Y[i][j]))
 
-                if optimizer=='sgd':
-                    #Call backprop going backwards through the Network
-                    for layer in range(1, len(self.network)):
-                        for n in self.network[-1 * layer]:
-                            n.backprop(optimizer)
-                elif optimizer=='smart':
-                    
+                #Call backprop going backwards through the Network
+                for layer in range(1, len(self.network)):
+                    for n in self.network[-1 * layer]:
+                        n.backprop(optimizer)
 
             print(f'Epoch {epoch} / {epochs} | Avg Network Cost : {total_cost / len(X)}')
 
 def main():
     model = NeuralNetwork(4)
-    model.Dense(100, learning_rate=0.5, activation='sig')
-    model.Dense(4, activation='sig', learning_rate=0.1)
+    model.Dense(4, learning_rate=0.03, activation='relu')
+    model.connect(0, -1)
 
     X = np.array([
-        [0,0,0,0],
-        [0,0,0,1],
-        [0,0,1,0],
-        [0,0,1,1],
-        [0,1,0,0],
-        [0,1,0,1],
-        [0,1,1,0],
-        [0,1,1,1],
-        [1,0,0,0],
-        [1,0,0,1],
-        [1,0,1,0],
-        [1,0,1,1],
-        [1,1,0,0],
-        [1,1,0,1],
-        [1,1,1,0],
-        [1,1,1,1]
+        [0,0,0,0],[0,0,0,1],[0,0,1,0],[0,0,1,1],
+        [0,1,0,0],[0,1,0,1],[0,1,1,0],[0,1,1,1],
+        [1,0,0,0],[1,0,0,1],[1,0,1,0],[1,0,1,1],
+        [1,1,0,0],[1,1,0,1],[1,1,1,0],[1,1,1,1]
     ])
 
     Y = np.array([
-        [0,0,0,1],
-        [0,0,1,0],
-        [0,0,1,1],
-        [0,1,0,0],
-        [0,1,0,1],
-        [0,1,1,0],
-        [0,1,1,1],
-        [1,0,0,0],
-        [1,0,0,1],
-        [1,0,1,0],
-        [1,0,1,1],
-        [1,1,0,0],
-        [1,1,0,1],
-        [1,1,1,0],
-        [1,1,1,1],
-        [0,0,0,0]
+        [0,0,0,1],[0,0,1,0],[0,0,1,1],[0,1,0,0],
+        [0,1,0,1],[0,1,1,0],[0,1,1,1],[1,0,0,0],
+        [1,0,0,1],[1,0,1,0],[1,0,1,1],[1,1,0,0],
+        [1,1,0,1],[1,1,1,0],[1,1,1,1],[0,0,0,0]
     ])
 
-    model.fit(X, Y, epochs=100)
+    model.fit(X, Y, epochs=1000)
 
     print(model.toString())
 

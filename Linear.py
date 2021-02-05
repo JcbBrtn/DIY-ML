@@ -4,7 +4,7 @@ class Linear:
     def __init__(self, input_shape, learning_rate=0.015):
         self.learning_rate = learning_rate
         self.weights = np.random.random(input_shape)
-        print(f'weight shape : {self.weights.shape}')
+        #print(f'weight shape : {self.weights.shape}')
         self.last_output = 0.0
 
     def run(self, X):

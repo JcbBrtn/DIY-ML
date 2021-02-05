@@ -57,6 +57,7 @@ class Neuron:
     def back_attach(self, n):
         self.back_connections.append(n)
         n.front_attach(self)
+        np.append(self.weights, np.random.random())
         self.smart_agent=Linear(input_shape=len(self.back_connections))
 
     def activation_der(self, z):
@@ -99,10 +100,11 @@ class Neuron:
             self.fired = True
             inputs = []
             for n in self.back_connections:
+                n.toString()
                 inputs.append(n.activate())
 
             self.last_input = np.array(inputs)
-
+            #print(f'last_input : {self.last_input}\nWeights : {self.weights}')
             self.curr_z = sum(self.last_input * self.weights) + self.bias
 
             self.curr_activation = self.activation(self.curr_z)
@@ -130,7 +132,7 @@ class Neuron:
             #Use this Agent to Find the Optimal value to adjust by based on the Avg Change of cost of neuron, cost of neuron, and the various Chain rule derivatives
             X = []
             for weight in self.weights:
-                X.append(weight, error)
+                X.append([weight, error])
 
 
 def main():
@@ -149,8 +151,7 @@ def main():
         print(f'Model\'s prediction : {pred}')
         model[-1].update_error(pred)
         for j in range(1, len(model)):
-            model[-1 * j].backprop('smart')
+            model[-1 * j].backprop('sgd')
 
 if __name__ == '__main__':
     main()
-
