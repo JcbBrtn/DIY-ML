@@ -70,24 +70,28 @@ class NeuralNetwork:
             for n in l:
                 n.learning_rate = new_lr
 
-    def fit(self, X, Y, epochs=1, batch_size=16, optimizer='sgd'):
+    def fit(self, X, Y, epochs=1, batch_size=1, optimizer='sgd'):
         for epoch in range(epochs):
             total_cost = 0.0
-            for i in range(batch_size):
+            self.reset_error()
+            for i in range(len(X)):
                 #print(self.toString())
                 x = X[i]
                 pred = self.feed_forward(x)
                 #Update each end neurons error with each prediction made
-                self.reset_error()
 
                 for j,p in enumerate(pred):
                     total_cost += (p - Y[i][j])**2
                     self.network[-1][j].update_error((p - Y[i][j]))
 
-                #Call backprop going backwards through the Network
-                for layer in range(1, len(self.network)):
-                    for n in self.network[-1 * layer]:
-                        n.backprop(optimizer)
+                if i%batch_size == 0:
+                    #If It is the end of a batch
+                    #Call backprop going backwards through the Network
+                    for layer in range(1, len(self.network)):
+                        for n in self.network[-1 * layer]:
+                            n.backprop(optimizer)
+                    self.reset_error()
+                
 
             print(f'Epoch {epoch} / {epochs} | Avg Network Cost : {total_cost / len(X)}', end='\r')
 
@@ -113,7 +117,7 @@ def main():
         [1,1,0,1],[1,1,1,0],[1,1,1,1],[0,0,0,0]
     ])
 
-    model.fit(X, Y, epochs=1000)
+    model.fit(X, Y, epochs=1000, batch_size=4)
 
     print(model.toString())
 
