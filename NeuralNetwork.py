@@ -70,7 +70,7 @@ class NeuralNetwork:
             for n in l:
                 n.learning_rate = new_lr
 
-    def fit(self, X, Y, epochs=1, batch_size=1, optimizer='sgd'):
+    def fit(self, X, Y, epochs=1, batch_size=1, optimizer="adam"):
         for epoch in range(epochs):
             total_cost = 0.0
             self.reset_error()
@@ -97,8 +97,8 @@ class NeuralNetwork:
 
 def main():
     model = NeuralNetwork(4)
-    model.Dense(4, learning_rate=0.09, activation='relu')
-    model.Dense(4, learning_rate=0.09, activation='relu')
+    model.Dense(8, learning_rate=0.02, activation='tanh')
+    model.Dense(4, learning_rate=0.02, activation='tanh')
     for layer1 in range(len(model.network)):
         for layer2 in range(1, len(model.network)):
             model.connect(layer1, layer2)
@@ -117,7 +117,7 @@ def main():
         [1,1,0,1],[1,1,1,0],[1,1,1,1],[0,0,0,0]
     ])
 
-    model.fit(X, Y, epochs=1000, batch_size=4)
+    model.fit(X, Y, epochs=500, batch_size=1, optimizer="adam")
 
     print(model.toString())
 

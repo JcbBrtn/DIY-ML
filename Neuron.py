@@ -21,6 +21,8 @@ class Neuron:
         self.curr_activation = 0.0 
         self.fired = False
         self.total_error = 0.0
+        self.m = [0] * len(self.back_connections)
+        self.v = [0] * len(self.back_connections)
 
         if not self.is_input:
             for n in self.back_connections:
@@ -54,8 +56,13 @@ class Neuron:
     def front_attach(self, n):
         self.front_connections.append(n)
 
+    def reset_m_and_v(self):
+        self.m = [0] * len(self.back_connections)
+        self.v = [0] * len(self.back_connections)
+
     def back_attach(self, n):
         self.back_connections.append(n)
+        self.reset_m_and_v()
         n.front_attach(self)
         np.append(self.weights, np.random.random())
         self.smart_agent=Linear(input_shape=len(self.back_connections))
@@ -127,12 +134,22 @@ class Neuron:
 
             #Update the Bias
             self.bias -= self.activation_der(self.curr_z) * error * self.learning_rate
-        elif optimizer=='smart':
-            #For Each Weight Create an x in input X that a linear learning agent tries to learn to adjust the weights
-            #Use this Agent to Find the Optimal value to adjust by based on the Avg Change of cost of neuron, cost of neuron, and the various Chain rule derivatives
-            X = []
-            for weight in self.weights:
-                X.append([weight, error])
+        
+        elif optimizer=='adam':
+            beta_1 = 0.9
+            beta_2 = 0.999
+            epsilon = 1.0e-8
+            for i in range(len(self.weights)):
+                weight_error = self.last_input[i] * self.activation_der(self.curr_z) * error
+                self.m[i] = beta_1 * self.m[i] + ((1-beta_1) * weight_error)
+                self.v[i] = beta_2 * self.v[i] + ((1-beta_2) * weight_error**2)
+                m_hat = self.m[i] / (1 - beta_1)
+                v_hat = self.v[i] / (1 - beta_2)
+                self.weights[i] -= (self.learning_rate * m_hat) / (np.sqrt(v_hat) + epsilon)
+                self.back_connections[i].update_error(weight_error)
+            
+            #Update the Bias
+            self.bias -= self.activation_der(self.curr_z) * error * self.learning_rate
 
 
 def main():
