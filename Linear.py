@@ -23,12 +23,13 @@ class Linear:
 
     def fit(self, X, Y, epochs=1):
         for epoch in range(epochs):
-            print(f'Epoch {epoch} / {epochs}')
+            print(f'Epoch {epoch} / {epochs}', end='\r')
             for t, x in enumerate(X):
-                print(f'\tt = {t} / {len(X)}', end='\r')
+                #print(f'\tt = {t} / {len(X)}', end='\r')
                 self.run(x)
                 self.learn(Y[t], x)
-            print(self.weights)
+            #print(self.weights)
+        print(f'Epoch {epochs} / {epochs}')
         
     def predict(self, X):
         output = []
@@ -47,7 +48,7 @@ def test():
     y = np.array([3,5,6,3,5])
 
     model = Linear(len(X[0]), learning_rate=0.02)
-    model.fit(X, y, epochs=5)
+    model.fit(X, y, epochs=50)
 
     print(model.predict(np.array([[4,7,1]])))
 
