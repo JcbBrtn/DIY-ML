@@ -1,4 +1,4 @@
-from cmath import nan
+from black import out
 import numpy as np
 
 class FunctionGenerator:
@@ -61,8 +61,24 @@ class FunctionGenerator:
                 else:
                     total = f(total)
 
-                if total == nan:
-                    total = np.Inf
-
             output.append(total)
         return output
+
+    def mutate(self):
+        #set up the child to be the same as the parent
+        child = FunctionGenerator(dimensions=len(self.dimensions))
+        child.func = self.func
+        child.varBank = self.varBank
+
+        #make slight changes to the child
+
+        return child
+
+    def score(self, output):
+        #This needs to be tweaked to include points outside of the set
+        #take the magnitude of the output array that is given by the run function.
+        total = 0
+        for i in output:
+            total += (i * i)
+        
+        return np.sqrt(i)
